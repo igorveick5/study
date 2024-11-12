@@ -1,0 +1,17 @@
+v1.0.1:
+    - 'Initialize plugin'
+v1.0.2:
+    - 'Created table watchlearn_movies_'
+    - builder_table_create_watchlearn_movies_.php
+v1.0.3:
+    - 'Updated table watchlearn_movies_'
+    - builder_table_update_watchlearn_movies_.php
+v1.0.4:
+    - 'Created table watchlearn_movies_genres'
+    - builder_table_create_watchlearn_movies_genres.php
+v1.0.5:
+    - 'Created table watchlearn_movies_movies_genres'
+    - builder_table_create_watchlearn_movies_movies_genres.php
+v1.0.6:
+    - 'Updated table watchlearn_movies_movies'
+    - builder_table_update_watchlearn_movies_movies.php

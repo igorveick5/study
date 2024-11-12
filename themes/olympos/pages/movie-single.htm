@@ -1,0 +1,73 @@
+url = "/movies/movie/:slug"
+layout = "default"
+title = "Movie single"
+==
+<?php
+use WatchLearn\Movies\Models\Movie;
+    function onStart(){
+        $this['movie'] = Movie::where('slug', '=', $this->param('slug'))->first();
+        $this['lastImageIndex'] = count($this['movie']['movie_gallery']) - 1;
+    }
+?>
+==
+
+{% if movie %}
+    <h2>{{ movie.name}}</h2>
+    <img src="{{ movie.poster.thumb(200,auto) }}">
+
+    
+    
+    <h4>{{ movie.year }}</h4>
+
+    <h3>Description</h3>
+
+    {{ movie.description|raw }}
+
+
+{# ACTORS #}
+    <h3>Actors</h3>
+
+    <div class="actors">
+    {% set actorCount = movie.actors|length %}
+    {% for actor in movie.actors %}
+        {{ actor.actor_name }} ({{ actor.actor_age }})
+        {% if not loop.last %}
+            , 
+        {% endif %}
+    {% endfor %}
+</div>
+
+{# GALLERY #}
+    <h3>Gallery</h3>
+
+     <div class="swiper mySwiper">
+            <div class="swiper-wrapper">
+            
+                {% for image in movie.movie_gallery %}
+                    <div class="swiper-slide">
+                        <img src="{{ image.thumb(200, 200, {'mode': 'crop'}) }}" alt="Gallery Image for {{ movie.name }}">
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination (optional) -->
+            <div class="swiper-pagination"></div>
+
+            <!-- Navigation arrows (optional) -->
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+
+    {# <div class="MyPoster">
+        <img src="{{ movie.movie_gallery[lastImageIndex].thumb(80,80, {'mode':'crop'}) }}">
+    </div> #}
+
+    <h3>Genres</h3>
+
+    {% for genre in movie.genres %}
+        <a href="/genres/{{ genre.slug }}">{{ genre.genre_title }}</a><br>
+    {% endfor %}
+
+{% else %}
+    {{ notFoundMessage }}
+{% endif %}

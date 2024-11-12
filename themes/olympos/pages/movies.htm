@@ -1,0 +1,157 @@
+url = "/movies/:page?"
+layout = "default"
+title = "Movies"
+==
+<?php
+use Watchlearn\Movies\Models\Movie;
+
+function onStart() {
+   
+    $searchQuery = input('search');
+    
+    if ($searchQuery) {
+      
+        $this['movies'] = Movie::where('name', 'like', '%' . $searchQuery . '%')->paginate(5);
+
+        
+        if ($this['movies']->count() == 0) {
+            $this['no_results'] = true;
+        }
+
+        $this['search_query'] = $searchQuery;  
+
+        
+
+    } else {
+        // If no search query, just show all movies
+        $this['movies'] = Movie::paginate(2);
+        $this['search_query'] = '';  // Clear
+        $this['no_results'] = false;
+    }
+}
+?>
+
+==
+
+{# SearchBar #}
+<div class="searchbar">
+    <form action="/movies" method="get">
+        <input class="search-input" type="text" placeholder="Search movies..." name="search" value="{{ search_query }}">
+        <button class="submit-search-button" type="submit"><i class="fa fa-search"></i></button>
+    </form>
+</div>
+
+
+{% if search_query %}
+    <p>Showing results for: "{{ search_query }}"</p>
+{% endif %}
+
+{% if no_results %}
+    <p class="error-message">No movies found for "{{ search_query }}". Please try another search.</p>
+{% endif %}
+
+
+{# MOVIE LIST #}
+{% for movie in movies %}
+    <h1><a href="/movies/movie/{{ movie.slug }}">{{ movie.name }}</a></h1>
+
+    {# Display Movie Poster (using thumbnail) #}
+    <img src="{{ movie.poster.thumb(200, 'auto') }}" alt="{{ movie.name }} Poster">
+
+    {# Movie Description #}
+    <p>{{ movie.description|html_limit(100)|raw }}</p>
+
+     <p>{{ movie.year }}</p>
+
+
+{# ACTORS #}
+     <h3>Actors</h3>
+     {# {{ dump(movies.actors)}} #}
+   <div class="actors">
+    {% set actorCount = movie.actors|length %}
+    {% for actor in movie.actors %}
+        {{ actor.actor_name }} ({{ actor.actor_age }})
+        {% if not loop.last %}
+            , 
+        {% endif %}
+    {% endfor %}
+</div>
+
+
+ {# GENRES #}
+      <h3>Genres</h3>
+    {% for genre in movie.genres %}
+   <a href="/genres/{{ genre.slug }}">
+        {{ genre.genre_title }}
+    </a><br>
+
+    {% endfor %}
+
+    {# Movie Gallery (Lightbox) #}
+    {# <ul class="gallery clearfix">
+    {% for image in movie.movie_gallery %}
+        <li>
+            <a href="{{ image.path }}" data-lightbox="movie-gallery" data-title="Gallery Image for {{ movie.name }}">
+                <img src="{{ image.thumb(200, 200, {'mode':'crop'}) }}" alt="Gallery Image for {{ movie.name }}">
+            </a>
+        </li>
+    {% endfor %}
+    </ul> #}
+
+
+{# Movie Gallery (Swiper) #}
+   <div class="swiper mySwiper">
+            <div class="swiper-wrapper">
+            
+                {% for image in movie.movie_gallery %}
+                    <div class="swiper-slide">
+                        <img src="{{ image.thumb(200, 200, {'mode': 'crop'}) }}" alt="Gallery Image for {{ movie.name }}">
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination (optional) -->
+            <div class="swiper-pagination"></div>
+
+            <!-- Navigation arrows (optional) -->
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+
+{% endfor %}
+
+
+
+{# PAGINATION #}
+{# {% if movies.items %}
+{{ movies.render|raw }}
+{% endif %} #}
+
+
+
+{# PAGINATION  #}
+{% if movies.hasPages %}
+    <ul class="pagination">
+        <li>
+            {% if movies.currentPage > 1 %}
+                <a href="{{ movies.previousPageUrl }}" rel="prev"><i class="fa-solid fa-chevron-left"></i></a>
+            {% else %}
+                <span class="disabled"><i class="fa-solid fa-chevron-left"></i></span>
+            {% endif %}
+        </li>
+
+        {% for page in range(1, movies.lastPage) %}
+            <li>
+                <a href="{{ movies.url(page) }}">{{ page }}</a>
+            </li>
+        {% endfor %}
+
+        <li>
+            {% if movies.hasMorePages %}
+                <a href="{{ movies.nextPageUrl }}" rel="next"><i class="fa-solid fa-chevron-right"></i></a>
+            {% else %}
+                <span class="disabled"><i class="fa-solid fa-chevron-right"></i></span>
+            {% endif %}
+        </li>
+    </ul>
+{% endif %}
